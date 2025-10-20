@@ -4,8 +4,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
-import { WebSocketServer } from "y-websocket";
-
+import { WebSocketServer } from "ws";           // WS server
+// CommonJS import via `createRequire`
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const { setupWSConnection } = require("y-websocket");
 
 
 import authRoutes from './routes/auth.js';
