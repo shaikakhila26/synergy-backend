@@ -9,6 +9,8 @@ dotenv.config();
 const router = express.Router();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
 // Rate limiter
 const authLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 min
@@ -28,7 +30,7 @@ router.post('/signup', authLimiter, async (req, res) => {
       email,
       password,
       options: {
-        emailRedirectTo: "http://localhost:5173/login",
+        emailRedirectTo: `${CLIENT_URL}/login`,
         data: { name },
       },
     });
@@ -60,7 +62,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
 
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "http://localhost:5173/reset-password",
+      redirectTo: `${CLIENT_URL}/reset-password`,
     });
     if (error) return res.status(400).json({ success: false, message: error.message });
 

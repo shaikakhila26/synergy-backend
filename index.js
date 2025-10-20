@@ -21,8 +21,14 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);           // ⚡ use http server
-const io = new Server(httpServer, {            // ⚡ socket.io instance
-  cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] ,credentials : true},
+
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const io = new Server(httpServer, {
+  cors: {
+    origin: CLIENT_URL,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
 });
 
 // ✅ Reuse the same httpServer for Express + Socket.io + Y-WebSocket
@@ -42,10 +48,10 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: CLIENT_URL,
   methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
 }));
 
 app.use(express.json());
