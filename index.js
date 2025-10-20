@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
 import { WebSocketServer } from 'ws';
-import { setupWSConnection } from './node_modules/y-websocket/bin/utils.js';
+import { setupWSConnection } from 'y-websocket/bin/utils.js';
 
 
 
@@ -31,12 +31,12 @@ const io = new Server(httpServer, {
   },
 });
 
-// ✅ Reuse the same httpServer for Express + Socket.io + Y-WebSocket
-const wss = new WebSocketServer({ server: httpServer });
-
+// -------------------- Y-WebSocket --------------------
+const wss = new WebSocketServer({ server: httpServer, path: '/yjs' });
 wss.on('connection', (ws, req) => {
   setupWSConnection(ws, req);
 });
+console.log('🖌 Y-WebSocket ready at path /yjs');
 
 // 🔹 UPDATED: Security headers
 app.use(helmet());
@@ -378,4 +378,4 @@ socket.on("disconnectPresenceRoom", () => {
 
 
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => console.log(`✅ Y-WebSocket + Backend running on ws://localhost:${PORT}`));
+httpServer.listen(PORT, () => console.log(`✅ Y-WebSocket + Backend running on ${CLIENT_URL} via port ${PORT}`));
