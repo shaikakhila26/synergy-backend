@@ -1,0 +1,131 @@
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.out/
+.output/
+.tmp/
+.synergy-build/
+synergy-frontend/dist/
+synergy-backend/dist/
+
+# Vite / cache
+.cache/
+.vite/
+.vitepress/dist
+parcel-cache/
+.pnp.*
+.cache-loader
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+Icon?
+ehthumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.psess
+*.vsp
+*.user
+*.userosscache
+*.sublime-workspace
+*.sublime-project
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+synergy-backend/.env
+synergy-frontend/.env
+*.local
+credentials.json
+*.pem
+*.key
+*.p12
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+pids/
+*.pid
+*.seed
+
+# Testing / coverage
+coverage/
+.nyc_output/
+jest.cache
+*.lcov
+
+# OS temp
+tmp/
+temp/
+.cache/
+*.tmp
+
+
+
+# Lockfiles (keep lockfiles committed, but ignore lock backups)
+package-lock.json.old
+yarn.lock.*.tmp
+
+# Misc
+.sass-cache
+.cache-loader
+report.[0-9]*.json
+*.tsbuildinfo
+
+
+
+
+# Service / runtime artifacts
+npm-debug.log
+pm2.log
+pm2.pid
+pids/
+*.pid
+
+# Database & persistence (do NOT commit Yjs LevelDB files)
+synergy-backend/yjs-docs/
+synergy-backend/yjs-docs/**
+
+# Local node_modules in subprojects
+synergy-backend/node_modules/
+synergy-frontend/node_modules/
+
+# Coverage / reports from CI or local
+coverage/
+reports/
+
+# JetBrains
+.idea/
+*.iml
+
+# OS-specific swap / lock files
+*~
+*.swp
+.~*
+
+# OneDrive / sync artefacts
+~$*
+*.cloud
+*.lnk
+
+

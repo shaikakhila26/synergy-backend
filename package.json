@@ -1,0 +1,37 @@
+{
+  "name": "synergy-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.74.0",
+    "@tiptap/core": "^3.7.0",
+    "@tiptap/starter-kit": "^3.7.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "konva": "^10.0.2",
+    "nodemailer": "^7.0.9",
+    "react-konva": "^19.0.10",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^13.0.0",
+    "ws": "^8.18.3",
+    "y-leveldb": "^0.2.0",
+    "y-prosemirror": "^1.3.7",
+    "y-websocket": "^1.4.5",
+    "yjs": "^13.6.27"
+  }
+}
