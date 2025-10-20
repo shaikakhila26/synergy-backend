@@ -4,8 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
-import { WebSocketServer } from 'ws';
-import { setupWSConnection } from 'y-websocket/bin/utils.js';
+import { WebSocketServer } from "y-websocket";
 
 
 
