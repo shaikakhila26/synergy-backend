@@ -82,6 +82,7 @@ io.on('connection', (socket) => {
   console.log('🔌 Socket connected:', socket.id);
 
   socket.on('joinWorkspace', (workspaceId) => {
+    console.log(`Socket ${socket.id} requests to join workspace ${workspaceId}`);
     if (!workspaceId) return;
     const room = `workspace:${workspaceId}`;
     socket.join(room);
@@ -89,6 +90,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('leaveWorkspace', (workspaceId) => {
+    console.log(`Socket ${socket.id} requests to leave workspace ${workspaceId}`);
     if (!workspaceId) return;
     const room = `workspace:${workspaceId}`;
     socket.leave(room);
@@ -106,6 +108,7 @@ io.on('connection', (socket) => {
 
   // send workspace message
   socket.on('sendWorkspaceMessage', async (payload) => {
+    console.log('sendWorkspaceMessage payload:', payload);
     // payload: { workspace_id, sender_id, text }
     try {
       const { workspace_id, sender_id, text } = payload;
@@ -115,6 +118,8 @@ io.on('connection', (socket) => {
         .insert([{ workspace_id, sender_id, text }])
         .select()
         .single();
+
+        console.log('Inserted workspace message data:', data, 'error:', error);
 
       if (error) {
         console.error('Insert message error:', error);
