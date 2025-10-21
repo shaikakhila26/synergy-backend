@@ -5,12 +5,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { authenticateSupabase } from '../middleware/auth.js';
 import { createTaskList } from '../models/task.js';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+
+
 
 const router = express.Router();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 const ALLOWED_ROLES = ['owner', 'admin', 'member'];
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 router.use((req,res,next)=>{
   console.log(req.method, req.url);
@@ -206,6 +210,7 @@ router.post('/:workspaceId/invite', authenticateSupabase, async (req, res) => {
     if (insertError) return res.status(500).json({ success: false, message: insertError.message });
 
     // Send email
+    /*
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT),
@@ -215,11 +220,11 @@ router.post('/:workspaceId/invite', authenticateSupabase, async (req, res) => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-    });
+    });*/
 
     const inviteLink = `${process.env.CLIENT_URL}/join/${token}`;
 
-    await transporter.sendMail({
+    /*await transporter.sendMail({
       from: `"${workspace.name}" <${process.env.SMTP_USER}>`,
       to: email,
       subject: `You're invited to join workspace "${workspace.name}"`,
@@ -228,6 +233,22 @@ router.post('/:workspaceId/invite', authenticateSupabase, async (req, res) => {
         <p>${req.user.email} invited you to join the workspace <b>${workspace.name}</b>.</p>
         <p>Click here to join: <a href="${inviteLink}">${inviteLink}</a></p>
         <p>If you didn't expect this invite, ignore this email.</p>
+      `,
+    });*/
+
+    // ✅ Send email using Resend
+    await resend.emails.send({
+      from: `Synergy <${process.env.RESEND_FROM}>`,
+      to: email,
+      subject: `You're invited to join "${workspace.name}" on Synergy`,
+      html: `
+        <p>Hello 👋,</p>
+        <p><b>${req.user.email}</b> has invited you to join the workspace <b>${workspace.name}</b> on Synergy.</p>
+        <p>Click below to accept the invite:</p>
+        <p><a href="${inviteLink}" target="_blank" style="color:#007bff;">Join Workspace</a></p>
+        <p>If you weren't expecting this invite, you can ignore this email.</p>
+        <br/>
+        <p>— The Synergy Team</p>
       `,
     });
 
