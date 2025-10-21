@@ -210,6 +210,7 @@ router.post('/:workspaceId/invite', authenticateSupabase, async (req, res) => {
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'false', // true for 465, false for other ports
+      requireTLS: true,   
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -233,6 +234,7 @@ router.post('/:workspaceId/invite', authenticateSupabase, async (req, res) => {
     res.json({ success: true, message: 'Invite sent successfully' });
   } catch (err) {
     console.error(err);
+    console.log("Error sending invite:", err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
