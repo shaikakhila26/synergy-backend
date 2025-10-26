@@ -5,10 +5,13 @@ import dotenv from 'dotenv';
 import supabase from './db.js';
 
 import { WebSocketServer } from "ws";           // WS server
-// CommonJS import via `createRequire`
+// CommonJS import via `createRequire` because `y-websocket` ships CJS
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const { setupWSConnection } = require("y-websocket");
+// Be defensive: `require('y-websocket')` may export the function directly,
+// or as `.setupWSConnection`, or under `default`. Try the common shapes.
+const _yWebsocket = require("y-websocket");
+const setupWSConnection = _yWebsocket.setupWSConnection || _yWebsocket.default?.setupWSConnection || _yWebsocket.default || _yWebsocket;
 
 
 import authRoutes from './routes/auth.js';
@@ -93,10 +96,10 @@ httpServer.on('upgrade', (request, socket, head) => {
     console.log('[upgrade] incoming upgrade for', pathname);
 
     if (!pathname.startsWith('/yjs')) {
-      // Not a y-websocket upgrade - destroy the socket (or let other handlers
-      // inspect it if you add more upgrade routing).
-      console.log('[upgrade] not a /yjs path, destroying socket');
-      socket.destroy();
+      // Not a y-websocket upgrade - do not handle here so other upgrade
+      // listeners (socket.io) can process it. Destroying the socket here
+      // caused socket.io websocket upgrades/polling to fail with 502/CORS.
+      console.log('[upgrade] not a /yjs path, ignoring to allow other handlers');
       return;
     }
 
