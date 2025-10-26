@@ -387,8 +387,8 @@ socket.on("disconnectPresenceRoom", () => {
 });
 
 
-const PORT = process.env.PORT ;   // ✅ Render assigns its own port
-httpServer.listen(PORT, () => {
-  console.log(`✅ Y-WebSocket + Backend running on ${process.env.CLIENT_URL} via port ${PORT}`);
+const PORT = process.env.PORT;
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Y-WebSocket + Backend running on ${CLIENT_URL} via port ${PORT}`);
 });
 
