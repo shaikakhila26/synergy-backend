@@ -2,7 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import supabase from './db.js';
 
 import { WebSocketServer } from "ws";           // WS server
 // CommonJS import via `createRequire`
@@ -39,6 +39,7 @@ const io = new Server(httpServer, {
   cors: {
     // Accept requests only from allowedOrigins to avoid wildcard in production.
     origin: (origin, callback) => {
+      console.log('Socket.io connection attempt from origin:', origin);
       // allow non-browser clients like server-side requests with no origin
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
@@ -48,6 +49,7 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
+  transports: ['websocket', 'polling'],
 });
 
 // Log low-level engine connection errors to help diagnose failed websocket handshakes
@@ -109,6 +111,13 @@ const workspaceStickies = {};
 // ⚡ Socket.io chat handling
 io.on('connection', (socket) => {
   console.log('🔌 Socket connected:', socket.id);
+  
+  // Log socket.io handshake details for debugging
+  console.log('Socket handshake:', {
+    headers: socket.handshake.headers,
+    query: socket.handshake.query,
+    auth: socket.handshake.auth,
+  });
 
   socket.on('joinWorkspace', (workspaceId) => {
     console.log(`Socket ${socket.id} requests to join workspace ${workspaceId}`);
@@ -137,11 +146,11 @@ io.on('connection', (socket) => {
 
   // send workspace message
   socket.on('sendWorkspaceMessage', async (payload) => {
-    console.log('sendWorkspaceMessage payload:', payload);
+    console.log('📨 sendWorkspaceMessage payload:', payload);
     // payload: { workspace_id, sender_id, text }
     try {
       const { workspace_id, sender_id, text } = payload;
-      const supa = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+      console.log(`[Chat] Inserting message for workspace ${workspace_id} from ${sender_id}`);
       const { data, error } = await supabase
         .from('messages')
         .insert([{ workspace_id, sender_id, text }])
@@ -304,7 +313,8 @@ socket.on("joinRoom", (workspaceId) => {
 socket.on("joinRoom", (workspaceId) => {
   const room = `workspace:${workspaceId}`;
   socket.join(room);
-  console.log(`${socket.id} joined workspace ${workspaceId}`);
+  console.log(`🎨 ${socket.id} joined whiteboard room ${room}`);
+  console.log(`[Whiteboard] Room ${room} members:`, Array.from(io.sockets.adapter.rooms.get(room) || []));
 
   if (!workspaceLines[workspaceId]) workspaceLines[workspaceId] = [];
   if (!workspaceStickies[workspaceId]) workspaceStickies[workspaceId] = [];
@@ -317,9 +327,11 @@ socket.on("draw", ({ workspaceId, line }) => {
   if (!workspaceLines[workspaceId]) workspaceLines[workspaceId] = [];
   workspaceLines[workspaceId].push(line);
   // broadcast to everyone including sender
-  console.log(`DRAW -> workspace ${workspaceId}, total lines: ${workspaceLines[workspaceId].length}`);
-  console.log(`[SERVER] Broadcasting syncLines to room: ${workspaceId}`);
-  io.to(`workspace:${workspaceId}`).emit("syncLines", workspaceLines[workspaceId]);
+  console.log(`🎨 DRAW -> workspace ${workspaceId}, total lines: ${workspaceLines[workspaceId].length}`);
+  const room = `workspace:${workspaceId}`;
+  console.log(`[Whiteboard] Broadcasting syncLines to room: ${room}`);
+  console.log(`[Whiteboard] Current room members:`, Array.from(io.sockets.adapter.rooms.get(room) || []));
+  io.to(room).emit("syncLines", workspaceLines[workspaceId]);
 });
 
 socket.on("undo", ({ workspaceId }) => {
