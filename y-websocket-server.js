@@ -1,4 +1,5 @@
 // server.js
+/*
 import { setupWSConnection } from 'y-websocket/bin/utils.js';
 import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
@@ -14,3 +15,4 @@ wss.on('connection', (ws, req) => {
 server.listen(port, () => {
   console.log(`Y-WebSocket Server running on ws://localhost:${port}`);
 });
+*/
