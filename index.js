@@ -89,8 +89,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-// attach supabase client to app for reuse in routes (optional)
+// attach imported supabase client to app for reuse in routes (optional)
 app.set('supabase', supabase);
 
 
@@ -177,8 +176,7 @@ io.on('connection', (socket) => {
     try {
       const { sender_id, recipient_id, text } = payload;
       // Persist message with thread_id = null and workspace_id = null (or you may set workspace_id)
-      const supa = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-      const { data, error } = await supa
+      const { data, error } = await supabase
         .from('messages')
         .insert([{ workspace_id: null, sender_id, text, thread_id: null }])
         .select()
