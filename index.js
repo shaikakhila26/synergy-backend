@@ -38,6 +38,8 @@ const wss = new WebSocketServer({ server: httpServer, path: '/yjs' });
 wss.on('connection', (ws, req) => {
   setupWSConnection(ws, req);
 });
+console.log('ENV PORT:', process.env.PORT);
+
 console.log('🖌 Y-WebSocket ready at path /yjs');
 
 // 🔹 UPDATED: Security headers
