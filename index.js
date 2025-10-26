@@ -81,13 +81,43 @@ try {
 }
 
 // -------------------- Y-WebSocket --------------------
-const wss = new WebSocketServer({ server: httpServer, path: '/yjs' });
-wss.on('connection', (ws, req) => {
-  setupWSConnection(ws, req);
-});
-console.log('ENV PORT:', process.env.PORT);
+// Use `noServer` + an HTTP upgrade handler so we accept upgrades for
+// `/yjs/<doc-id>` paths reliably behind proxies (some proxies don't
+// like exact path matching). This lets us accept any upgrade whose
+// pathname starts with `/yjs` and then pass the socket to y-websocket.
+const wss = new WebSocketServer({ noServer: true });
 
-console.log('🖌 Y-WebSocket ready at path /yjs');
+httpServer.on('upgrade', (request, socket, head) => {
+  try {
+    const { pathname } = new URL(request.url, `http://${request.headers.host}`);
+    console.log('[upgrade] incoming upgrade for', pathname);
+
+    if (!pathname.startsWith('/yjs')) {
+      // Not a y-websocket upgrade - destroy the socket (or let other handlers
+      // inspect it if you add more upgrade routing).
+      console.log('[upgrade] not a /yjs path, destroying socket');
+      socket.destroy();
+      return;
+    }
+
+    // Accept the upgrade and hand over to y-websocket's setup
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      console.log('[upgrade] accepted websocket for', pathname);
+      try {
+        setupWSConnection(ws, request);
+      } catch (err) {
+        console.error('[y-websocket] setupWSConnection error', err);
+        ws.close();
+      }
+    });
+  } catch (err) {
+    console.error('[upgrade] error parsing upgrade request', err);
+    try { socket.destroy(); } catch (e) {}
+  }
+});
+
+console.log('ENV PORT:', process.env.PORT);
+console.log('🖌 Y-WebSocket ready at path /yjs (upgrade handler)');
 
 // Use a function for origin so the Access-Control-Allow-Origin header is set
 // to the incoming request origin when allowed. This avoids sending the wrong
