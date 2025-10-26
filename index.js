@@ -27,10 +27,13 @@ const httpServer = createServer(app);           // ⚡ use http server
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // Allow list for HTTP CORS and socket.io
-const allowedOrigins = [
-  'https://synergy-frontend-amber.vercel.app',
+// Populate from PROCESS env `ALLOWED_ORIGINS` (comma-separated) or fall back to sensible defaults.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGINS.split(',').map(s=>s.trim())) || [
+  process.env.CLIENT_URL || 'https://synergy-frontend-amber.vercel.app',
   'http://localhost:5173'
 ];
+
+console.log('Allowed origins for CORS/socket.io:', allowedOrigins);
 
 const io = new Server(httpServer, {
   cors: {
@@ -39,12 +42,22 @@ const io = new Server(httpServer, {
       // allow non-browser clients like server-side requests with no origin
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      console.warn('Socket.io connection attempt from disallowed origin:', origin);
       return callback(new Error('CORS not allowed'));
     },
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
+
+// Log low-level engine connection errors to help diagnose failed websocket handshakes
+try {
+  io.engine.on('connection_error', (err) => {
+    console.error('Socket.io engine connection_error:', err.message, err);
+  });
+} catch (e) {
+  // older versions may not expose engine; ignore if unavailable
+}
 
 // -------------------- Y-WebSocket --------------------
 const wss = new WebSocketServer({ server: httpServer, path: '/yjs' });
