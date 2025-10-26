@@ -29,7 +29,7 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 // Allow list for HTTP CORS and socket.io
 // Populate from PROCESS env `ALLOWED_ORIGINS` (comma-separated) or fall back to sensible defaults.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGINS.split(',').map(s=>s.trim())) || [
-  process.env.CLIENT_URL || 'https://synergy-frontend-amber.vercel.app',
+  process.env.CLIENT_URL || 'https://synergy-frontend-amber.vercel.app','https://synergy-frontend-rcvjebvi0-akhilas-projects-01434bdf.vercel.app',
   'http://localhost:5173'
 ];
 
