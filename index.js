@@ -42,6 +42,12 @@ console.log('ENV PORT:', process.env.PORT);
 
 console.log('🖌 Y-WebSocket ready at path /yjs');
 
+app.use(cors({
+  origin: CLIENT_URL,
+  methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
 // 🔹 UPDATED: Security headers
 app.use(helmet());
 
@@ -51,12 +57,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({
-  origin: CLIENT_URL,
-  methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+
 
 app.use(express.json());
 
