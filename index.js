@@ -36,12 +36,10 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGI
 console.log('Allowed origins for CORS/socket.io:', allowedOrigins);
 
 const io = new Server(httpServer, {
-  path: '/socket.io/', // Explicit socket.io path
+  path: '/socket.io/',
   cors: {
-    // Accept requests only from allowedOrigins to avoid wildcard in production.
     origin: (origin, callback) => {
       console.log('Socket.io connection attempt from origin:', origin);
-      // allow non-browser clients like server-side requests with no origin
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       console.warn('Socket.io connection attempt from disallowed origin:', origin);
@@ -49,6 +47,21 @@ const io = new Server(httpServer, {
     },
     methods: ['GET', 'POST'],
     credentials: true,
+  },
+  allowEIO3: true, // Allow Engine.IO 3 compatibility
+  maxHttpBufferSize: 1e8,
+  connectTimeout: 45000,
+  pingTimeout: 30000,
+  pingInterval: 25000,
+  transports: ['websocket'],
+  allowUpgrades: true,
+  perMessageDeflate: {
+    threshold: 2048, // Size in bytes to compress
+    clientNoContextTakeover: true,
+    serverNoContextTakeover: true,
+    serverMaxWindowBits: 10,
+    concurrencyLimit: 10,
+    threshold: 1024
   },
   transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
   pingTimeout: 60000, // Increase ping timeout to 60 seconds
@@ -105,8 +118,22 @@ app.use('/api/chat', chatRoutes);           // ⚡ NEW: use chat routes
 app.use('/api/taskboard', taskboardRoutes); // 🔹 NEW: taskboard routes
 
 app.get('/', (req, res) => {
-  res.setHeader('Cache-Control', 'no-store'); // 🔹 UPDATED: prevent caching
+  res.setHeader('Cache-Control', 'no-store');
   res.send('Synergy backend running!');
+});
+
+// Debug endpoint to check socket server status
+app.get('/debug/socket-status', (req, res) => {
+  const status = {
+    server: 'running',
+    socketio: {
+      numClients: io.engine.clientsCount,
+      rooms: Array.from(io.sockets.adapter.rooms.keys()),
+    },
+    headers: req.headers,
+    time: new Date().toISOString()
+  };
+  res.json(status);
 });
 
 // Store lines per workspace to allow new users to sync
