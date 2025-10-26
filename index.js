@@ -25,9 +25,22 @@ const app = express();
 const httpServer = createServer(app);           // ⚡ use http server
 
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
+// Allow list for HTTP CORS and socket.io
+const allowedOrigins = [
+  'https://synergy-frontend-amber.vercel.app',
+  'http://localhost:5173'
+];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: CLIENT_URL,
+    // Accept requests only from allowedOrigins to avoid wildcard in production.
+    origin: (origin, callback) => {
+      // allow non-browser clients like server-side requests with no origin
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS not allowed'));
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -41,11 +54,6 @@ wss.on('connection', (ws, req) => {
 console.log('ENV PORT:', process.env.PORT);
 
 console.log('🖌 Y-WebSocket ready at path /yjs');
-
-const allowedOrigins = [
-  'https://synergy-frontend-amber.vercel.app',
-  'http://localhost:5173'
-];
 
 app.use(cors({
   origin: allowedOrigins,
@@ -305,7 +313,7 @@ socket.on("undo", ({ workspaceId }) => {
   if (!workspaceLines[workspaceId]) workspaceLines[workspaceId] = [];
   const removed = workspaceLines[workspaceId].pop();
   console.log(`[SERVER] UNDO in workspace ${workspaceId}, removed:`, removed);
-  io.to(workspaceId).emit("syncLines", workspaceLines[workspaceId]);
+  io.to(`workspace:${workspaceId}`).emit("syncLines", workspaceLines[workspaceId]);
 });
   
 
@@ -313,8 +321,8 @@ socket.on("clear", ({ workspaceId }) => {
   workspaceLines[workspaceId] = [];
   workspaceStickies[workspaceId] = [];
    console.log(`CLEAR -> workspace ${workspaceId}`);
-  io.to(workspaceId).emit("syncLines", []);
-  io.to(workspaceId).emit("syncStickies", []);
+  io.to(`workspace:${workspaceId}`).emit("syncLines", []);
+  io.to(`workspace:${workspaceId}`).emit("syncStickies", []);
 
 });
 
