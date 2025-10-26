@@ -36,6 +36,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS && process.env.ALLOWED_ORIGI
 console.log('Allowed origins for CORS/socket.io:', allowedOrigins);
 
 const io = new Server(httpServer, {
+  path: '/socket.io/', // Explicit socket.io path
   cors: {
     // Accept requests only from allowedOrigins to avoid wildcard in production.
     origin: (origin, callback) => {
@@ -49,7 +50,12 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  transports: ['websocket', 'polling'],
+  transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
+  pingTimeout: 60000, // Increase ping timeout to 60 seconds
+  pingInterval: 25000, // Send ping every 25 seconds
+  upgradeTimeout: 10000, // Wait 10 seconds for upgrade
+  allowUpgrades: true,
+  cookie: false // Disable socket.io cookie
 });
 
 // Log low-level engine connection errors to help diagnose failed websocket handshakes
