@@ -42,8 +42,13 @@ console.log('ENV PORT:', process.env.PORT);
 
 console.log('🖌 Y-WebSocket ready at path /yjs');
 
+const allowedOrigins = [
+  'https://synergy-frontend-amber.vercel.app',
+  'http://localhost:5173'
+];
+
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: allowedOrigins,
   methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
