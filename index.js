@@ -89,12 +89,27 @@ console.log('ENV PORT:', process.env.PORT);
 
 console.log('🖌 Y-WebSocket ready at path /yjs');
 
+// Use a function for origin so the Access-Control-Allow-Origin header is set
+// to the incoming request origin when allowed. This avoids sending the wrong
+// CORS response when multiple origins are allowed.
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // allow server-to-server requests with no origin
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn('CORS denied for origin:', origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET','POST','PUT','DELETE','PATCH','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
+
+// Ensure preflight OPTIONS requests are handled and logged
+app.options('*', (req, res) => {
+  console.log('Received CORS preflight for', req.path, 'Origin:', req.headers.origin);
+  res.sendStatus(204);
+});
 // 🔹 UPDATED: Security headers
 app.use(helmet());
 
