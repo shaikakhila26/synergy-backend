@@ -106,9 +106,29 @@ app.use(cors({
 }));
 
 // Ensure preflight OPTIONS requests are handled and logged
-app.options('*', (req, res) => {
-  console.log('Received CORS preflight for', req.path, 'Origin:', req.headers.origin);
-  res.sendStatus(204);
+// Use a simple middleware to catch OPTIONS requests and respond to preflight
+// so we avoid path parsing issues in some environments.
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    console.log('Received CORS preflight for', req.path, 'Origin:', req.headers.origin);
+    // Let the cors middleware set headers; just end the preflight here.
+    return res.sendStatus(204);
+  }
+  next();
+});
+
+// Lightweight header-based CORS middleware (runs before the `cors` package)
+// This ensures that even if other middleware throws, preflight requests still
+// receive Access-Control-Allow-* headers when the origin is allowed.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  }
+  next();
 });
 // 🔹 UPDATED: Security headers
 app.use(helmet());
